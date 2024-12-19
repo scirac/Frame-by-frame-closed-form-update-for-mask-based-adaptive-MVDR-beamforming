@@ -37,10 +37,10 @@ def get_3dim_spectrum(wav_name, channel_vec, start_point, stop_point, frame, shi
 
     dump_wav = dump_wav / np.max(np.abs(dump_wav)) * 0.7
     window = sg.hanning(fftl + 1, 'periodic')[: - 1]
-    multi_window = npm.repmat(window, len(channel_vec), 1)    
+    multi_window = np.tile(window, (len(channel_vec), 1))
     st = 0
     ed = frame
-    number_of_frame = np.int((len(samples) - frame) /  shift)
+    number_of_frame = int((len(samples) - frame) /  shift)
     spectrums = np.zeros((len(channel_vec), number_of_frame, np.int(fftl / 2) + 1), dtype=np.complex64)
     for ii in range(0, number_of_frame):
         multi_signal_spectrum = fft(dump_wav[:, st:ed], n=fftl, axis=1)[:, 0:np.int(fftl / 2) + 1] # channel * number_of_bin        
@@ -56,16 +56,16 @@ def get_3dim_spectrum_from_data(wav_data, frame, shift, fftl):
     len_sample, len_channel_vec = np.shape(wav_data)            
     dump_wav = wav_data.T
     #dump_wav = dump_wav / np.max(np.abs(dump_wav)) * 0.7
-    window = sg.hanning(fftl + 1, 'periodic')[: - 1]
-    multi_window = npm.repmat(window, len_channel_vec, 1)    
+    window = sg.windows.hann(fftl,sym=False)
+    multi_window = npm.repmat(window, len_channel_vec, 1)
     st = 0
     ed = frame
-    number_of_frame = np.int((len_sample - frame) /  shift)
+    number_of_frame = int((len_sample - frame) /  shift)
     if len_sample == frame:
         number_of_frame = 1
-    spectrums = np.zeros((len_channel_vec, number_of_frame, np.int(fftl / 2) + 1), dtype=np.complex64)
+    spectrums = np.zeros((len_channel_vec, number_of_frame, int(fftl / 2) + 1), dtype=np.complex64)
     for ii in range(0, number_of_frame):       
-        multi_signal_spectrum = fft(dump_wav[:, st:ed], n=fftl, axis=1)[:, 0:np.int(fftl / 2) + 1] # channel * number_of_bin        
+        multi_signal_spectrum = fft(dump_wav[:, st:ed], n=fftl, axis=1)[:, 0:int(fftl / 2) + 1] # channel * number_of_bin
         spectrums[:, ii, :] = multi_signal_spectrum
         st = st + shift
         ed = ed + shift
@@ -77,15 +77,15 @@ def my_det(matrix_):
 
 def spec2wav(spectrogram, sampling_frequency, fftl, frame_len, shift_len):
     n_of_frame, fft_half = np.shape(spectrogram)    
-    hanning = sg.hanning(fftl + 1, 'periodic')[: - 1]    
+    hanning = sg.windows.hann(fftl, sym=False)
     cut_data = np.zeros(fftl, dtype=np.complex64)
     result = np.zeros(sampling_frequency * 60 * 5, dtype=np.float32)
     start_point = 0
     end_point = start_point + frame_len
     for ii in range(0, n_of_frame):
         half_spec = spectrogram[ii, :]   
-        cut_data[0:np.int(fftl / 2) + 1] = half_spec.T   
-        cut_data[np.int(fftl / 2) + 1:] =  np.flip(np.conjugate(half_spec[1:np.int(fftl / 2)]), axis=0)
+        cut_data[0:int(fftl / 2) + 1] = half_spec.T
+        cut_data[int(fftl / 2) + 1:] =  np.flip(np.conjugate(half_spec[1:int(fftl / 2)]), axis=0)
         """
         pl.plot(np.abs(cut_data))
         pl.show()

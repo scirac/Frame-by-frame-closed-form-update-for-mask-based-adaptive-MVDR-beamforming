@@ -49,12 +49,11 @@ noise_rand = np.random.normal(loc=0, scale=0.00001, size=(min_size, len(CHANMEL_
 synth_r = noise + multi_channels_data + noise_rand
 
 complex_spectrum, _ = util.get_3dim_spectrum_from_data(synth_r, FFT_LENGTH, FFT_SHIFT, FFT_LENGTH)
-
+#complex_spectrum dimension : channels * number of frames * fft_bins
 
 complex_spectrum_noise, _ = util.get_3dim_spectrum_from_data(noise, FFT_LENGTH, FFT_SHIFT, FFT_LENGTH)
 complex_spectrum_speech, _ = util.get_3dim_spectrum_from_data(multi_channels_data, FFT_LENGTH, FFT_SHIFT, FFT_LENGTH)
 mask = np.abs(complex_spectrum_speech[0, :, :]) / (np.abs(complex_spectrum_speech[0, :, :]) + np.abs(complex_spectrum_noise[0, :, :]))
-
 
 
 number_of_frame = np.shape(complex_spectrum)[1]
@@ -64,10 +63,10 @@ beamformer_maker = fbf_mvdr.frame_by_frame_mvdr(SAMPLING_FREQUENCY,
                  FFT_LENGTH,
                  FFT_SHIFT,
                  len(CHANMEL_INDEX))
-synth_r = multi_channels_data+noise+noise_rand
+synth_r = multi_channels_data+noise+noise_rand #why add again?
 
 # ========================================
-# frame by frame 
+# frame by frame
 # ========================================
 synth = multi_channels_data[:, 0] * 0
 st = 0
@@ -83,7 +82,7 @@ for i in range(0, number_of_frame):
     #print(beamformer)
     enhanced_speech = beamformer_maker.apply_beamformer(beamformer, complex_spectrum[:, i, :])
     enhanced_speech[np.isnan(enhanced_speech)] = 0
-    synth[st:ed] = synth[st:ed] + enhanced_speech 
+    synth[st:ed] = synth[st:ed] + enhanced_speech
     st = st + FFT_SHIFT
     ed = ed + FFT_SHIFT
 

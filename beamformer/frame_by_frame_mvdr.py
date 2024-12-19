@@ -75,7 +75,7 @@ class frame_by_frame_mvdr:
             w1 = np.matmul(w1, Y_inv)
             w2 = np.matmul(np.conj(complex_spectrum[:, :, f]).T, Y_inv)
             w2 = np.matmul(w2, complex_spectrum[:, :, f])
-            w2 = np.complex(1) + w2
+            w2 = complex(1) + w2
             weight = w1 / w2 # (CH * CH)
             self.Y_inv[:, :, f] = Y_inv - weight
         
